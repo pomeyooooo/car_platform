@@ -25,12 +25,12 @@
   "vehicles": [
     {
       "license_plate": "ABC-1234",
-      "mileage": 56,
+      "mileage": 2050,
       "low_oil_volume": true,
       "warning_light": false,
-      "status": "rented",
-      "last_maintenance_date": "2025-04-01",
-      "last_maintainance_mileage": 4500
+      "status": "available",
+      "last_maintenance_date": "2025-06-04",
+      "last_maintainance_mileage": 15
     },
     {
       "license_plate": "AD-7575",
@@ -212,11 +212,57 @@
       "has_issues": false,
       "issue_description": "",
       "issue_type": [],
+      "mileage_after_driving": 15,
+      "return_time": "2025-06-04T18:26:56.287Z",
+      "oil_after": "low",
+      "log_ID": 10,
+      "has_issues_return": false,
+      "issue_description_return": "",
+      "issue_type_return": []
+    },
+    {
+      "vehicle_id": "ABC-1234",
+      "user_id": 1,
+      "mileage_before_driving": 1561,
+      "rent_time": "2025-06-04T18:26:40.381Z",
+      "oil_before": "low",
+      "has_issues": false,
+      "issue_description": "",
+      "issue_type": [],
+      "mileage_after_driving": 2050,
+      "return_time": "2025-06-04T18:28:43.870Z",
+      "oil_after": "low",
+      "log_ID": 11,
+      "has_issues_return": false,
+      "issue_description_return": "",
+      "issue_type_return": []
+    },
+    {
+      "vehicle_id": "ABC-1234",
+      "user_id": 1,
+      "mileage_before_driving": 2025,
+      "rent_time": "2025-06-04T18:28:05.230Z",
+      "oil_before": "high",
+      "has_issues": false,
+      "issue_description": "",
+      "issue_type": [],
       "mileage_after_driving": null,
       "return_time": null,
       "oil_after": null,
-      "log_ID": 10
+      "log_ID": 12
     }
   ],
-  "breakdown_logs": []
+  "breakdown_logs": [],
+  "maintenance_logs": [
+    {
+      "log_id": 1,
+      "license_plate": "ABC-1234",
+      "maintenance_type": "定期保養",
+      "maintenance_date": "2025-06-04",
+      "mileage_at_maintenance": 15,
+      "notes": "",
+      "cost": "156",
+      "performed_by": "admin"
+    }
+  ]
 }

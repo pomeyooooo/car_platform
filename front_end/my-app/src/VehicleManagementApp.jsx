@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Camera, Check, ArrowLeft, AlertTriangle, Car, Clock } from 'lucide-react';
 import './VehicleManagementApp.css';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-
 // 模擬登入後的用戶資訊
 const USER_DATA = {
   userID: 1,
@@ -64,7 +62,7 @@ const VehicleManagementApp = () => {
       
       console.log('Fetching vehicle data for:', license_plate);
       // 從後端獲取車輛資訊
-      const response = await fetch(`${API_BASE_URL}/rentals/api/vehicle/${license_plate}`);
+      const response = await fetch(`http://localhost:3000/rentals/api/vehicle/${license_plate}`);
       const data = await response.json();
       
       if (data.success) {
@@ -180,7 +178,7 @@ const VehicleManagementApp = () => {
       
       console.log("借車資訊提交:", borrowData);
       
-      const response = await fetch('${API_BASE_URL}/rentals/api/borrow', {
+      const response = await fetch('http://localhost:3000/rentals/api/borrow', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -252,7 +250,7 @@ const VehicleManagementApp = () => {
       
       console.log("還車資訊提交:", returnData);
       
-      const response = await fetch('${API_BASE_URL}/rentals/api/return', {
+      const response = await fetch('http://localhost:3000/rentals/api/return', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -280,7 +278,7 @@ const VehicleManagementApp = () => {
   // 獲取當前用戶的租借記錄
   const fetchCurrentRentals = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/rentals/api/user/${USER_DATA.userID}/current-rental`);
+      const response = await fetch(`http://localhost:3000/rentals/api/user/${USER_DATA.userID}/current-rental`);
       const data = await response.json();
       
       if (data.success) {

@@ -8,6 +8,15 @@ const cors = require('cors');
 // 初始化 Express 應用
 const app = express();
 
+// 健康檢查路由
+app.get('/', (req, res) => {
+  res.status(200).json({ 
+    status: 'success', 
+    message: '智慧車輛管理平台 API 正在運行',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // 設定中間件
 app.use(cors({
   origin: [

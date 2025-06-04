@@ -19,15 +19,51 @@ app.get('/', (req, res) => {
 
 // 設定中間件
 app.use(cors({
-  origin: [
-    'http://localhost:3000', 
-    'http://localhost:3001',
-    /https:\/\/.*\.onrender\.com$/,     // 所有 Render 網址
-    /https:\/\/.*\.netlify\.app$/,     // 所有 Netlify 網址
-    'https://your-frontend-url.netlify.app'  // 稍後替換
-  ],
-  credentials: true
+  origin: function (origin, callback) {
+    // 允許沒有 origin 的請求（如手機應用程式、Postman）
+    if (!origin) return callback(null, true);
+    
+    // 允許的來源列表
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      /https:\/\/.*\.netlify\.app$/,     // 所有 Netlify 網址
+      /https:\/\/.*\.onrender\.com$/     // 所有 Render 網址
+    ];
+    
+    // 檢查來源是否被允許
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (typeof allowedOrigin === 'string') {
+        return origin === allowedOrigin;
+      } else {
+        return allowedOrigin.test(origin);
+      }
+    });
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200 // 某些舊版瀏覽器（IE11、各種 SmartTV）對 204 有問題
 }));
+
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', true);
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));

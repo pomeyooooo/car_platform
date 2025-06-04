@@ -1,0 +1,208 @@
+{
+  "users": [
+    {
+      "userID": 1,
+      "name": "admin",
+      "password": "admin123",
+      "phone_num": "0912345678",
+      "isAdmin": true
+    },
+    {
+      "userID": 2,
+      "name": "user",
+      "password": "user123",
+      "phone_num": "0987654321",
+      "isAdmin": false
+    },
+    {
+      "userID": 3,
+      "name": "pomeyo",
+      "password": "1111",
+      "phone_num": "097897987",
+      "isAdmin": true
+    }
+  ],
+  "vehicles": [
+    {
+      "license_plate": "ABC-1234",
+      "mileage": 56,
+      "low_oil_volume": true,
+      "warning_light": false,
+      "status": "available",
+      "last_maintenance_date": "2025-04-01",
+      "last_maintainance_mileage": 4500
+    },
+    {
+      "license_plate": "AD-7575",
+      "mileage": 1561651,
+      "low_oil_volume": false,
+      "warning_light": false,
+      "status": "rented",
+      "last_maintenance_date": "2025-01-17",
+      "last_maintainance_mileage": 1561651
+    }
+  ],
+  "rental_logs": [
+    {
+      "vehicle_id": "ABC-1234",
+      "user_id": 1,
+      "mileage_before_driving": 5000,
+      "rent_time": "2025-06-04T11:33:49.280Z",
+      "oil_before": "high",
+      "has_issues": false,
+      "issue_description": "",
+      "issue_type": [],
+      "mileage_after_driving": 5100,
+      "return_time": "2025-06-04T11:34:19.407Z",
+      "oil_after": "mid",
+      "log_ID": 1,
+      "has_issues_return": false,
+      "issue_description_return": "",
+      "issue_type_return": []
+    },
+    {
+      "vehicle_id": "ABC-1234",
+      "user_id": 1,
+      "mileage_before_driving": 11,
+      "rent_time": "2025-06-04T11:46:39.942Z",
+      "oil_before": "mid",
+      "has_issues": false,
+      "issue_description": "",
+      "issue_type": [],
+      "mileage_after_driving": 52562,
+      "return_time": "2025-06-04T11:47:00.857Z",
+      "oil_after": "mid",
+      "log_ID": 2,
+      "has_issues_return": false,
+      "issue_description_return": "",
+      "issue_type_return": []
+    },
+    {
+      "vehicle_id": "ABC-1234",
+      "user_id": 1,
+      "mileage_before_driving": 8787,
+      "rent_time": "2025-06-04T11:49:21.916Z",
+      "oil_before": "high",
+      "has_issues": true,
+      "issue_description": "NMSL",
+      "issue_type": [],
+      "mileage_after_driving": 6,
+      "return_time": "2025-06-04T11:51:11.548Z",
+      "oil_after": "high",
+      "log_ID": 3,
+      "has_issues_return": false,
+      "issue_description_return": "",
+      "issue_type_return": []
+    },
+    {
+      "vehicle_id": "ABC-1234",
+      "user_id": 1,
+      "mileage_before_driving": 1151,
+      "rent_time": "2025-06-04T11:50:53.044Z",
+      "oil_before": "mid",
+      "has_issues": false,
+      "issue_description": "",
+      "issue_type": [],
+      "mileage_after_driving": 15,
+      "return_time": "2025-06-04T11:51:58.341Z",
+      "oil_after": "low",
+      "log_ID": 4,
+      "has_issues_return": false,
+      "issue_description_return": "",
+      "issue_type_return": []
+    },
+    {
+      "vehicle_id": "ABC-1234",
+      "user_id": 1,
+      "mileage_before_driving": 25,
+      "rent_time": "2025-06-04T11:54:37.311Z",
+      "oil_before": "mid",
+      "has_issues": false,
+      "issue_description": "",
+      "issue_type": [],
+      "mileage_after_driving": 13,
+      "return_time": "2025-06-04T11:56:37.565Z",
+      "oil_after": "high",
+      "log_ID": 5,
+      "has_issues_return": false,
+      "issue_description_return": "",
+      "issue_type_return": []
+    },
+    {
+      "vehicle_id": "ABC-1234",
+      "user_id": 1,
+      "mileage_before_driving": 8787,
+      "rent_time": "2025-06-04T14:08:07.074Z",
+      "oil_before": "low",
+      "has_issues": false,
+      "issue_description": "",
+      "issue_type": [],
+      "mileage_after_driving": 8797,
+      "return_time": "2025-06-04T14:09:11.510Z",
+      "oil_after": "low",
+      "log_ID": 6,
+      "has_issues_return": true,
+      "issue_description_return": "89484984",
+      "issue_type_return": [
+        "light",
+        "engine",
+        "tire"
+      ]
+    },
+    {
+      "vehicle_id": "ABC-1234",
+      "user_id": 1,
+      "mileage_before_driving": 9,
+      "rent_time": "2025-06-04T14:12:11.624Z",
+      "oil_before": "mid",
+      "has_issues": false,
+      "issue_description": "",
+      "issue_type": [],
+      "mileage_after_driving": 17,
+      "return_time": "2025-06-04T14:12:28.981Z",
+      "oil_after": "mid",
+      "log_ID": 7,
+      "has_issues_return": false,
+      "issue_description_return": "",
+      "issue_type_return": []
+    },
+    {
+      "vehicle_id": "ABC-1234",
+      "user_id": 1,
+      "mileage_before_driving": 9,
+      "rent_time": "2025-06-04T14:13:27.167Z",
+      "oil_before": "low",
+      "has_issues": false,
+      "issue_description": "",
+      "issue_type": [],
+      "mileage_after_driving": 13,
+      "return_time": "2025-06-04T14:13:38.575Z",
+      "oil_after": "low",
+      "log_ID": 8,
+      "has_issues_return": true,
+      "issue_description_return": "5151",
+      "issue_type_return": [
+        "engine",
+        "tire"
+      ]
+    },
+    {
+      "vehicle_id": "ABC-1234",
+      "user_id": 1,
+      "mileage_before_driving": 50,
+      "rent_time": "2025-06-04T15:15:26.019Z",
+      "oil_before": "low",
+      "has_issues": false,
+      "issue_description": "",
+      "issue_type": [],
+      "mileage_after_driving": 56,
+      "return_time": "2025-06-04T15:16:01.576Z",
+      "oil_after": "low",
+      "log_ID": 9,
+      "has_issues_return": false,
+      "issue_description_return": "",
+      "issue_type_return": []
+    }
+  ],
+  "breakdown_logs": []
+}

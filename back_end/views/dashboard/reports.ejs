@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>報表分析</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="wrapper">
+    <!-- 側邊欄 -->
+    <nav id="sidebar">
+      <div class="sidebar-header">
+        <h3>智慧車輛管理平台</h3>
+      </div>
+
+      <ul class="list-unstyled components">
+        <li>
+          <a href="/dashboard">
+            <i class="fas fa-tachometer-alt"></i> 儀表板
+          </a>
+        </li>
+        <li>
+          <a href="/vehicles">
+            <i class="fas fa-car"></i> 車輛管理
+          </a>
+        </li>
+        <li>
+          <a href="/rentals">
+            <i class="fas fa-exchange-alt"></i> 借還車記錄
+          </a>
+        </li>
+        <li>
+          <a href="/maintenance">
+            <i class="fas fa-wrench"></i> 維修保養
+          </a>
+        </li>
+        <li>
+          <a href="/users">
+            <i class="fas fa-users"></i> 用戶管理
+          </a>
+        </li>
+        <li class="active">
+          <a href="/reports">
+            <i class="fas fa-chart-bar"></i> 報表分析
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- 頁面內容 -->
+    <div id="content">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <button type="button" id="sidebarCollapse" class="btn btn-info">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="ml-auto">
+            <a href="/user/logout" class="btn btn-danger">
+              <i class="fas fa-sign-out-alt"></i> 登出
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="container-fluid mt-3">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2>報表分析</h2>
+          <div>
+            <button class="btn btn-outline-primary" onclick="exportReports()">
+              <i class="fas fa-download"></i> 匯出報表
+            </button>
+            <button class="btn btn-primary" onclick="refreshData()">
+              <i class="fas fa-sync-alt"></i> 重新整理
+            </button>
+          </div>
+        </div>
+
+        <!-- 時間範圍選擇 -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-3">
+                <label for="startDate">開始日期</label>
+                <input type="date" id="startDate" class="form-control">
+              </div>
+              <div class="col-md-3">
+                <label for="endDate">結束日期</label>
+                <input type="date" id="endDate" class="form-control">
+              </div>
+              <div class="col-md-3">
+                <label>&nbsp;</label>
+                <button class="btn btn-success form-control" onclick="applyDateFilter()">
+                  <i class="fas fa-filter"></i> 套用篩選
+                </button>
+              </div>
+              <div class="col-md-3">
+                <label>&nbsp;</label>
+                <button class="btn btn-secondary form-control" onclick="clearDateFilter()">
+                  <i class="fas fa-times"></i> 清除篩選
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 財務報表 -->
+        <div class="row">
+          <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h5 class="card-title">總收入</h5>
+                    <h2 class="card-text" id="totalIncome">$0</h2>
+                  </div>
+                  <i class="fas fa-dollar-sign fa-3x"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-4">
+            <div class="card text-white bg-danger mb-3">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h5 class="card-title">維護成本</h5>
+                    <h2 class="card-text" id="totalCost">$0</h2>
+                  </div>
+                  <i class="fas fa-wrench fa-3x"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-4">
+            <div class="card text-white bg-info mb-3">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h5 class="card-title">淨利潤</h5>
+                    <h2 class="card-text" id="netProfit">$0</h2>
+                  </div>
+                  <i class="fas fa-chart-line fa-3x"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 圖表區域 -->
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">車輛使用率統計</h5>
+              </div>
+              <div class="card-body">
+                <canvas id="vehicleUtilizationChart" style="max-height: 400px;"></canvas>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">用戶租借行為分析</h5>
+              </div>
+              <div class="card-body">
+                <canvas id="userBehaviorChart" style="max-height: 400px;"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mt-4">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">維護成本分析</h5>
+              </div>
+              <div class="card-body">
+                <canvas id="maintenanceCostChart" style="max-height: 400px;"></canvas>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">月度收支趨勢</h5>
+              </div>
+              <div class="card-body">
+                <canvas id="monthlyTrendChart" style="max-height: 400px;"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 詳細報表 -->
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">車輛詳細報表</h5>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-striped" id="vehicleReportTable">
+                    <thead>
+                      <tr>
+                        <th>車牌號碼</th>
+                        <th>總租借次數</th>
+                        <th>總使用時間(小時)</th>
+                        <th>總里程數</th>
+                        <th>使用率</th>
+                        <th>問題率</th>
+                        <th>當前狀態</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td colspan="7" class="text-center">載入中...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">用戶行為報表</h5>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-striped" id="userReportTable">
+                    <thead>
+                      <tr>
+                        <th>用戶姓名</th>
+                        <th>總租借次數</th>
+                        <th>平均租借時間(小時)</th>
+                        <th>總里程數</th>
+                        <th>問題率</th>
+                        <th>最愛車輛</th>
+                        <th>最後租借日期</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td colspan="7" class="text-center">載入中...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let currentDateFilter = null;
+
+    $(document).ready(function () {
+      $('#sidebarCollapse').on('click', function () {
+        $('#sidebar').toggleClass('active');
+      });
+
+      // 設定預設日期範圍（最近30天）
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 30);
+      
+      document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+      document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+
+      // 載入所有報表數據
+      loadAllReports();
+    });
+
+    function loadAllReports() {
+      loadFinancialReport();
+      loadVehicleUsageReport();
+      loadUserBehaviorReport();
+      loadMaintenanceReport();
+    }
+
+    function getDateFilterParams() {
+      if (!currentDateFilter) return '';
+      
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      
+      if (startDate && endDate) {
+        return `?start_date=${startDate}&end_date=${endDate}`;
+      }
+      return '';
+    }
+
+    function applyDateFilter() {
+      currentDateFilter = true;
+      loadAllReports();
+    }
+
+    function clearDateFilter() {
+      currentDateFilter = null;
+      loadAllReports();
+    }
+
+    function refreshData() {
+      loadAllReports();
+    }
+
+    function loadFinancialReport() {
+      const params = getDateFilterParams();
+      fetch(`/reports/api/financial-report${params}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            updateFinancialSummary(data.financial_report.summary);
+            updateMonthlyTrendChart(data.financial_report.monthly_breakdown);
+          }
+        })
+        .catch(error => console.error('載入財務報表失敗:', error));
+    }
+
+    function loadVehicleUsageReport() {
+      const params = getDateFilterParams();
+      fetch(`/reports/api/vehicle-usage${params}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            updateVehicleUtilizationChart(data.vehicle_usage);
+            updateVehicleReportTable(data.vehicle_usage);
+          }
+        })
+        .catch(error => console.error('載入車輛使用報表失敗:', error));
+    }
+
+    function loadUserBehaviorReport() {
+      const params = getDateFilterParams();
+      fetch(`/reports/api/user-behavior${params}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            updateUserBehaviorChart(data.user_behavior);
+            updateUserReportTable(data.user_behavior);
+          }
+        })
+        .catch(error => console.error('載入用戶行為報表失敗:', error));
+    }
+
+    function loadMaintenanceReport() {
+      const params = getDateFilterParams();
+      fetch(`/reports/api/maintenance-report${params}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            updateMaintenanceCostChart(data.maintenance_report);
+          }
+        })
+        .catch(error => console.error('載入維護報表失敗:', error));
+    }
+
+    function updateFinancialSummary(summary) {
+      document.getElementById('totalIncome').textContent = `$${summary.total_rental_income.toLocaleString()}`;
+      document.getElementById('totalCost').textContent = `$${summary.total_maintenance_cost.toLocaleString()}`;
+      document.getElementById('netProfit').textContent = `$${summary.net_profit.toLocaleString()}`;
+    }
+
+    function updateVehicleUtilizationChart(vehicleUsage) {
+      const ctx = document.getElementById('vehicleUtilizationChart').getContext('2d');
+      
+      // 清除現有圖表
+      if (window.vehicleUtilizationChart) {
+        window.vehicleUtilizationChart.destroy();
+      }
+
+      window.vehicleUtilizationChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: vehicleUsage.map(v => v.license_plate),
+          datasets: [{
+            label: '使用率 (%)',
+            data: vehicleUsage.map(v => parseFloat(v.utilization_rate)),
+            backgroundColor: '#007bff',
+            borderColor: '#0056b3',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                callback: function(value) {
+                  return value + '%';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateUserBehaviorChart(userBehavior) {
+      const ctx = document.getElementById('userBehaviorChart').getContext('2d');
+      
+      // 清除現有圖表
+      if (window.userBehaviorChart) {
+        window.userBehaviorChart.destroy();
+      }
+
+      // 取前10名活躍用戶
+      const topUsers = userBehavior.slice(0, 10);
+
+      window.userBehaviorChart = new Chart(ctx, {
+        type: 'horizontalBar',
+        data: {
+          labels: topUsers.map(u => u.name),
+          datasets: [{
+            label: '租借次數',
+            data: topUsers.map(u => u.total_rentals),
+            backgroundColor: '#28a745',
+            borderColor: '#1e7e34',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    function updateMaintenanceCostChart(maintenanceReport) {
+      const ctx = document.getElementById('maintenanceCostChart').getContext('2d');
+      
+      // 清除現有圖表
+      if (window.maintenanceCostChart) {
+        window.maintenanceCostChart.destroy();
+      }
+
+      const maintenanceTypes = Object.keys(maintenanceReport.maintenance_types);
+      const costs = maintenanceTypes.map(type => maintenanceReport.maintenance_types[type].cost);
+
+      window.maintenanceCostChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: maintenanceTypes,
+          datasets: [{
+            data: costs,
+            backgroundColor: [
+              '#FF6384',
+              '#36A2EB',
+              '#FFCE56',
+              '#4BC0C0',
+              '#9966FF',
+              '#FF9F40'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    }
+
+    function updateMonthlyTrendChart(monthlyData) {
+      const ctx = document.getElementById('monthlyTrendChart').getContext('2d');
+      
+      // 清除現有圖表
+      if (window.monthlyTrendChart) {
+        window.monthlyTrendChart.destroy();
+      }
+
+      const months = Object.keys(monthlyData).sort();
+      const incomeData = months.map(month => monthlyData[month].rental_income);
+      const costData = months.map(month => monthlyData[month].maintenance_cost);
+
+      window.monthlyTrendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: months,
+          datasets: [{
+            label: '收入',
+            data: incomeData,
+            borderColor: '#28a745',
+            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+            tension: 0.4
+          }, {
+            label: '成本',
+            data: costData,
+            borderColor: '#dc3545',
+            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    function updateVehicleReportTable(vehicleUsage) {
+      const tbody = document.querySelector('#vehicleReportTable tbody');
+      
+      if (vehicleUsage.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">無數據</td></tr>';
+        return;
+      }
+
+      let html = '';
+      vehicleUsage.forEach(vehicle => {
+        html += `
+          <tr>
+            <td>${vehicle.license_plate}</td>
+            <td>${vehicle.total_rentals}</td>
+            <td>${vehicle.total_usage_hours}</td>
+            <td>${vehicle.total_driven_mileage} km</td>
+            <td>${vehicle.utilization_rate}%</td>
+            <td>${vehicle.issue_rate}%</td>
+            <td>
+              <span class="badge badge-${getStatusBadgeClass(vehicle.status)}">${getStatusText(vehicle.status)}</span>
+            </td>
+          </tr>
+        `;
+      });
+      
+      tbody.innerHTML = html;
+    }
+
+    function updateUserReportTable(userBehavior) {
+      const tbody = document.querySelector('#userReportTable tbody');
+      
+      if (userBehavior.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">無數據</td></tr>';
+        return;
+      }
+
+      let html = '';
+      userBehavior.forEach(user => {
+        html += `
+          <tr>
+            <td>${user.name}</td>
+            <td>${user.total_rentals}</td>
+            <td>${user.avg_rental_hours}</td>
+            <td>${user.total_driven_mileage} km</td>
+            <td>${user.issue_rate}%</td>
+            <td>${user.favorite_vehicle || '無'}</td>
+            <td>${user.last_rental_date ? new Date(user.last_rental_date).toLocaleDateString() : '無'}</td>
+          </tr>
+        `;
+      });
+      
+      tbody.innerHTML = html;
+    }
+
+    function getStatusBadgeClass(status) {
+      switch (status) {
+        case 'available': return 'success';
+        case 'rented': return 'warning';
+        case 'broken': return 'danger';
+        case 'maintenance': return 'info';
+        default: return 'secondary';
+      }
+    }
+
+    function getStatusText(status) {
+      switch (status) {
+        case 'available': return '可用';
+        case 'rented': return '借出';
+        case 'broken': return '故障';
+        case 'maintenance': return '維修中';
+        default: return '未知';
+      }
+    }
+
+    function exportReports() {
+      // 實現報表匯出功能
+      alert('報表匯出功能開發中...');
+    }
+  </script>
+</body>
+</html>

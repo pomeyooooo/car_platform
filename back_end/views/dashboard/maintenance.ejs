@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>維修保養管理</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="wrapper">
+    <!-- 側邊欄 -->
+    <nav id="sidebar">
+      <div class="sidebar-header">
+        <h3>智慧車輛管理平台</h3>
+      </div>
+
+      <ul class="list-unstyled components">
+        <li>
+          <a href="/dashboard">
+            <i class="fas fa-tachometer-alt"></i> 儀表板
+          </a>
+        </li>
+        <li>
+          <a href="/vehicles">
+            <i class="fas fa-car"></i> 車輛管理
+          </a>
+        </li>
+        <li>
+          <a href="/rentals">
+            <i class="fas fa-exchange-alt"></i> 借還車記錄
+          </a>
+        </li>
+        <li class="active">
+          <a href="/maintenance">
+            <i class="fas fa-wrench"></i> 維修保養
+          </a>
+        </li>
+        <li>
+          <a href="/users">
+            <i class="fas fa-users"></i> 用戶管理
+          </a>
+        </li>
+        <li>
+          <a href="/reports">
+            <i class="fas fa-chart-bar"></i> 報表分析
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- 頁面內容 -->
+    <div id="content">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <button type="button" id="sidebarCollapse" class="btn btn-info">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="ml-auto">
+            <a href="/user/logout" class="btn btn-danger">
+              <i class="fas fa-sign-out-alt"></i> 登出
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="container-fluid mt-3">
+        <div class="d-flex justify-content-between mb-4">
+          <h2>維修保養管理</h2>
+          <button class="btn btn-primary" data-toggle="modal" data-target="#settingsModal">
+            <i class="fas fa-cog"></i> 保養設定
+          </button>
+        </div>
+
+        <!-- 保養設定摘要 -->
+        <div class="row mb-4">
+          <div class="col-md-3">
+            <div class="card text-white bg-info mb-3">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="card-title">保養間隔</h6>
+                    <h4 class="card-text"><%= settings.maintenance_interval_km %> km</h4>
+                  </div>
+                  <i class="fas fa-wrench fa-2x"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="card-title">機油更換</h6>
+                    <h4 class="card-text"><%= settings.oil_change_interval_km %> km</h4>
+                  </div>
+                  <i class="fas fa-oil-can fa-2x"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-white bg-danger mb-3">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="card-title">警告閾值</h6>
+                    <h4 class="card-text"><%= settings.warning_threshold_km %> km</h4>
+                  </div>
+                  <i class="fas fa-exclamation-triangle fa-2x"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-white bg-secondary mb-3">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="card-title">油量警告</h6>
+                    <h4 class="card-text"><%= (settings.fuel_warning_threshold * 100) %>%</h4>
+                  </div>
+                  <i class="fas fa-gas-pump fa-2x"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 維護分析圖表 -->
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">維護狀態分布</h5>
+              </div>
+              <div class="card-body">
+                <canvas id="maintenanceStatusChart" style="max-height: 300px;"></canvas>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">維護成本分析</h5>
+              </div>
+              <div class="card-body">
+                <canvas id="maintenanceCostChart" style="max-height: 300px;"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-md-12">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">車輛維護時程表</h5>
+              </div>
+              <div class="card-body">
+                <canvas id="maintenanceScheduleChart" style="max-height: 400px;"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 車輛維護狀態 -->
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">車輛維護狀態</h5>
+          </div>
+          <div class="card-body">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>車牌號碼</th>
+                  <th>當前里程</th>
+                  <th>上次保養</th>
+                  <th>保養里程</th>
+                  <th>距離保養</th>
+                  <th>維護狀態</th>
+                  <th>機油狀態</th>
+                  <th>車輛狀態</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (locals.maintenanceRecords && maintenanceRecords.length > 0) { %>
+                  <% maintenanceRecords.forEach(record => { %>
+                    <tr>
+                      <td><strong><%= record.license_plate %></strong></td>
+                      <td><%= record.current_mileage.toLocaleString() %> km</td>
+                      <td><%= record.last_maintenance_date || '未記錄' %></td>
+                      <td><%= record.last_maintenance_mileage.toLocaleString() %> km</td>
+                      <td>
+                        <% if (record.km_until_maintenance > 0) { %>
+                          <span class="text-success"><%= record.km_until_maintenance.toLocaleString() %> km</span>
+                        <% } else { %>
+                          <span class="text-danger">逾期 <%= Math.abs(record.km_until_maintenance).toLocaleString() %> km</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (record.maintenance_status === 'overdue') { %>
+                          <span class="badge badge-danger">逾期保養</span>
+                        <% } else if (record.maintenance_status === 'warning') { %>
+                          <span class="badge badge-warning">即將保養</span>
+                        <% } else { %>
+                          <span class="badge badge-success">良好</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (record.oil_status === 'low') { %>
+                          <span class="badge badge-danger">機油不足</span>
+                        <% } else { %>
+                          <span class="badge badge-success">正常</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (record.status === 'available') { %>
+                          <span class="badge badge-success">可用</span>
+                        <% } else if (record.status === 'rented') { %>
+                          <span class="badge badge-info">借出中</span>
+                        <% } else if (record.status === 'broken') { %>
+                          <span class="badge badge-danger">故障</span>
+                        <% } else { %>
+                          <span class="badge badge-warning">維護中</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <div class="btn-group">
+                          <% if (record.maintenance_status === 'overdue' || record.maintenance_status === 'warning') { %>
+                            <button class="btn btn-sm btn-primary" onclick="scheduleMaintenance('<%= record.license_plate %>')">
+                              <i class="fas fa-calendar-plus"></i> 安排保養
+                            </button>
+                          <% } %>
+                          <button class="btn btn-sm btn-info" onclick="viewHistory('<%= record.license_plate %>')">
+                            <i class="fas fa-history"></i> 歷史
+                          </button>
+                          <button class="btn btn-sm btn-success" onclick="completeMaintenance('<%= record.license_plate %>')">
+                            <i class="fas fa-check"></i> 完成保養
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }); %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="9" class="text-center">暫無車輛維護記錄</td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 維護警告區域 -->
+        <div class="card mt-4" id="alertsCard" style="display: none;">
+          <div class="card-header bg-warning">
+            <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> 維護警告</h5>
+          </div>
+          <div class="card-body" id="alertsContent">
+            <!-- 動態載入警告內容 -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 保養設定模態框 -->
+  <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">保養設定</h5>
+          <button type="button" class="close" data-dismiss="modal">
+            <span>&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="settingsForm">
+            <div class="form-group">
+              <label>保養間隔 (公里)</label>
+              <input type="number" class="form-control" name="maintenance_interval_km" value="<%= settings.maintenance_interval_km %>" min="1000" max="20000">
+            </div>
+            <div class="form-group">
+              <label>機油更換間隔 (公里)</label>
+              <input type="number" class="form-control" name="oil_change_interval_km" value="<%= settings.oil_change_interval_km %>" min="500" max="10000">
+            </div>
+            <div class="form-group">
+              <label>警告閾值 (公里)</label>
+              <input type="number" class="form-control" name="warning_threshold_km" value="<%= settings.warning_threshold_km %>" min="100" max="2000">
+            </div>
+            <div class="form-group">
+              <label>油量警告閾值 (%)</label>
+              <input type="number" class="form-control" name="fuel_warning_threshold" value="<%= settings.fuel_warning_threshold * 100 %>" min="10" max="50" step="5">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" onclick="saveSettings()">保存設定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 完成保養模態框 -->
+  <div class="modal fade" id="completeMaintenanceModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">完成保養記錄</h5>
+          <button type="button" class="close" data-dismiss="modal">
+            <span>&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="completeMaintenanceForm">
+            <input type="hidden" name="license_plate" id="maintenanceLicensePlate">
+            <div class="form-group">
+              <label>保養類型</label>
+              <select class="form-control" name="maintenance_type" required>
+                <option value="">請選擇保養類型</option>
+                <option value="定期保養">定期保養</option>
+                <option value="機油更換">機油更換</option>
+                <option value="輪胎更換">輪胎更換</option>
+                <option value="剎車檢查">剎車檢查</option>
+                <option value="電池更換">電池更換</option>
+                <option value="其他">其他</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>保養費用</label>
+              <input type="number" class="form-control" name="cost" placeholder="請輸入費用" min="0" step="0.01">
+            </div>
+            <div class="form-group">
+              <label>備註</label>
+              <textarea class="form-control" name="notes" rows="3" placeholder="保養詳細記錄..."></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" onclick="submitMaintenance()">提交記錄</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      $('#sidebarCollapse').on('click', function () {
+        $('#sidebar').toggleClass('active');
+      });
+      
+      // 載入維護警告
+      loadMaintenanceAlerts();
+      
+      // 載入維護分析圖表
+      loadMaintenanceAnalytics();
+    });
+
+    function loadMaintenanceAlerts() {
+      fetch('/maintenance/api/alerts')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.alerts.length > 0) {
+            let alertsHtml = '';
+            data.alerts.forEach(alert => {
+              const severityClass = alert.severity === 'high' ? 'danger' : 'warning';
+              alertsHtml += `
+                <div class="alert alert-${severityClass} alert-dismissible fade show" role="alert">
+                  <strong>${alert.license_plate}:</strong> ${alert.message}
+                  <br><small class="text-muted">建議行動: ${alert.action_required}</small>
+                  <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                  </button>
+                </div>
+              `;
+            });
+            document.getElementById('alertsContent').innerHTML = alertsHtml;
+            document.getElementById('alertsCard').style.display = 'block';
+          }
+        })
+        .catch(err => console.error('載入警告失敗:', err));
+    }
+
+    function loadMaintenanceAnalytics() {
+      // 載入維護報告數據
+      fetch('/reports/api/maintenance-report')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            updateMaintenanceCharts(data.maintenance_report);
+          }
+        })
+        .catch(error => console.error('載入維護分析失敗:', error));
+
+      // 載入車輛使用數據來分析維護時程
+      fetch('/reports/api/vehicle-usage')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            updateMaintenanceScheduleChart(data.vehicle_usage);
+          }
+        })
+        .catch(error => console.error('載入車輛數據失敗:', error));
+    }
+
+    function updateMaintenanceCharts(maintenanceReport) {
+      // 維護狀態分布圖表
+      const vehicleStats = maintenanceReport.vehicle_stats;
+      const statusCounts = {
+        '正常': 0,
+        '即將保養': 0,
+        '逾期保養': 0,
+        '需要維修': 0
+      };
+
+      vehicleStats.forEach(vehicle => {
+        if (vehicle.breakdown_count > 0) {
+          statusCounts['需要維修']++;
+        } else if (vehicle.maintenance_count === 0) {
+          statusCounts['逾期保養']++;
+        } else if (vehicle.reliability_score < 80) {
+          statusCounts['即將保養']++;
+        } else {
+          statusCounts['正常']++;
+        }
+      });
+
+      const ctx1 = document.getElementById('maintenanceStatusChart').getContext('2d');
+      new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(statusCounts),
+          datasets: [{
+            data: Object.values(statusCounts),
+            backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6f42c1'],
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+
+      // 維護成本分析圖表
+      const maintenanceTypes = maintenanceReport.maintenance_types;
+      const typeLabels = Object.keys(maintenanceTypes);
+      const typeCosts = typeLabels.map(type => maintenanceTypes[type].cost);
+
+      const ctx2 = document.getElementById('maintenanceCostChart').getContext('2d');
+      new Chart(ctx2, {
+        type: 'pie',
+        data: {
+          labels: typeLabels.length > 0 ? typeLabels : ['無維護記錄'],
+          datasets: [{
+            data: typeCosts.length > 0 ? typeCosts : [1],
+            backgroundColor: [
+              '#FF6384',
+              '#36A2EB',
+              '#FFCE56',
+              '#4BC0C0',
+              '#9966FF',
+              '#FF9F40'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.label + ': $' + context.parsed.toLocaleString();
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateMaintenanceScheduleChart(vehicleUsage) {
+      // 根據里程計算各車輛的維護緊急程度
+      const vehicles = vehicleUsage.map(vehicle => {
+        const mileageSinceLastMaintenance = vehicle.current_mileage - (vehicle.last_maintenance_mileage || 0);
+        let urgency = 'low';
+        
+        if (mileageSinceLastMaintenance > 5000) {
+          urgency = 'high';
+        } else if (mileageSinceLastMaintenance > 3000) {
+          urgency = 'medium';
+        }
+        
+        return {
+          license_plate: vehicle.license_plate,
+          current_mileage: vehicle.current_mileage,
+          mileage_since_maintenance: mileageSinceLastMaintenance,
+          urgency: urgency
+        };
+      });
+
+      // 按緊急程度排序
+      vehicles.sort((a, b) => {
+        const urgencyOrder = { high: 3, medium: 2, low: 1 };
+        return urgencyOrder[b.urgency] - urgencyOrder[a.urgency];
+      });
+
+      const ctx3 = document.getElementById('maintenanceScheduleChart').getContext('2d');
+      new Chart(ctx3, {
+        type: 'bar',
+        data: {
+          labels: vehicles.map(v => v.license_plate),
+          datasets: [{
+            label: '距上次保養里程 (km)',
+            data: vehicles.map(v => v.mileage_since_maintenance),
+            backgroundColor: vehicles.map(v => {
+              switch(v.urgency) {
+                case 'high': return '#dc3545';
+                case 'medium': return '#ffc107';
+                default: return '#28a745';
+              }
+            }),
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const vehicle = vehicles[context.dataIndex];
+                  return [
+                    `距上次保養: ${context.parsed.y.toLocaleString()} km`,
+                    `當前里程: ${vehicle.current_mileage.toLocaleString()} km`,
+                    `緊急程度: ${vehicle.urgency === 'high' ? '高' : vehicle.urgency === 'medium' ? '中' : '低'}`
+                  ];
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: '里程數 (km)'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function scheduleMaintenance(licensePlate) {
+      alert('將為車輛 ' + licensePlate + ' 安排保養時間');
+    }
+
+    function viewHistory(licensePlate) {
+      window.open('/maintenance/api/history/' + licensePlate, '_blank');
+    }
+
+    function completeMaintenance(licensePlate) {
+      document.getElementById('maintenanceLicensePlate').value = licensePlate;
+      $('#completeMaintenanceModal').modal('show');
+    }
+
+    function submitMaintenance() {
+      const formData = new FormData(document.getElementById('completeMaintenanceForm'));
+      const data = Object.fromEntries(formData);
+      
+      fetch('/maintenance/api/complete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.success) {
+          alert('保養記錄已保存！');
+          $('#completeMaintenanceModal').modal('hide');
+          location.reload();
+        } else {
+          alert('保存失敗: ' + result.message);
+        }
+      })
+      .catch(err => {
+        console.error('提交失敗:', err);
+        alert('提交保養記錄時發生錯誤');
+      });
+    }
+
+    function saveSettings() {
+      const formData = new FormData(document.getElementById('settingsForm'));
+      const data = Object.fromEntries(formData);
+      
+      // 轉換油量警告閾值為小數
+      data.fuel_warning_threshold = data.fuel_warning_threshold / 100;
+      
+      fetch('/maintenance/api/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.success) {
+          alert('設定已保存！');
+          $('#settingsModal').modal('hide');
+          location.reload();
+        } else {
+          alert('保存失敗: ' + result.message);
+        }
+      })
+      .catch(err => {
+        console.error('保存設定失敗:', err);
+        alert('保存設定時發生錯誤');
+      });
+    }
+  </script>
+</body>
+</html>

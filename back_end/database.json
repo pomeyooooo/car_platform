@@ -28,7 +28,7 @@
       "mileage": 56,
       "low_oil_volume": true,
       "warning_light": false,
-      "status": "available",
+      "status": "rented",
       "last_maintenance_date": "2025-04-01",
       "last_maintainance_mileage": 4500
     },
@@ -202,6 +202,20 @@
       "has_issues_return": false,
       "issue_description_return": "",
       "issue_type_return": []
+    },
+    {
+      "vehicle_id": "ABC-1234",
+      "user_id": 1,
+      "mileage_before_driving": 6,
+      "rent_time": "2025-06-04T16:52:59.320Z",
+      "oil_before": "mid",
+      "has_issues": false,
+      "issue_description": "",
+      "issue_type": [],
+      "mileage_after_driving": null,
+      "return_time": null,
+      "oil_after": null,
+      "log_ID": 10
     }
   ],
   "breakdown_logs": []

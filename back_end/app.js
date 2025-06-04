@@ -10,7 +10,13 @@ const app = express();
 
 // 設定中間件
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001'], // React 開發伺服器
+  origin: [
+    'http://localhost:3000', 
+    'http://localhost:3001',
+    /https:\/\/.*\.onrender\.com$/,     // 所有 Render 網址
+    /https:\/\/.*\.netlify\.app$/,     // 所有 Netlify 網址
+    'https://your-frontend-url.netlify.app'  // 稍後替換
+  ],
   credentials: true
 }));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -84,7 +90,12 @@ app.get('/dashboard', async (req, res) => {
 });
 
 // 設定伺服器端口
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`伺服器運行於 http://localhost:${PORT}`);
+const PORT = process.env.PORT || 10000;
+
+// app.listen(PORT, () => {
+//   console.log(`伺服器運行於 http://localhost:${PORT}`);
+// });
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`伺服器運行於 http://0.0.0.0:${PORT}`);
 });

@@ -29,6 +29,7 @@ async function initDb() {
       ],
       vehicles: [
         {
+          id: 1,
           license_plate: 'ABC-1234',
           mileage: 5000,
           low_oil_volume: false,
@@ -78,14 +79,19 @@ async function getAllVehicles() {
 
 async function addVehicle(vehicle) {
   const db = await readDb();
-  db.vehicles.push(vehicle);
+  const newId = db.vehicles.length > 0 
+    ? Math.max(...db.vehicles.map(v => v.id)) + 1 
+    : 1;
+  
+  const newVehicle = { ...vehicle, id: newId };
+  db.vehicles.push(newVehicle);
   await writeDb(db);
-  return vehicle;
+  return newVehicle;
 }
 
-async function updateVehicle(licensePlate, updates) {
+async function updateVehicle(vehicleId, updates) {
   const db = await readDb();
-  const index = db.vehicles.findIndex(v => v.license_plate === licensePlate);
+  const index = db.vehicles.findIndex(v => v.id === vehicleId);
   
   if (index === -1) return null;
   
@@ -94,9 +100,9 @@ async function updateVehicle(licensePlate, updates) {
   return db.vehicles[index];
 }
 
-async function deleteVehicle(licensePlate) {
+async function deleteVehicle(vehicleId) {
   const db = await readDb();
-  const index = db.vehicles.findIndex(v => v.license_plate === licensePlate);
+  const index = db.vehicles.findIndex(v => v.id === vehicleId);
   
   if (index === -1) return false;
   

@@ -257,6 +257,36 @@
           </div>
         </div>
 
+        <!-- 維護歷史記錄 -->
+        <div class="card mt-4">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-history"></i> 維護歷史記錄</h5>
+            <div>
+              <span class="badge badge-info" id="totalMaintenanceCost">總費用: $0</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped" id="maintenanceHistoryTable">
+                <thead>
+                  <tr>
+                    <th>車牌號碼</th>
+                    <th>保養類型</th>
+                    <th>保養日期</th>
+                    <th>保養里程</th>
+                    <th>費用</th>
+                    <th>執行人員</th>
+                    <th>備註</th>
+                  </tr>
+                </thead>
+                <tbody id="maintenanceHistoryBody">
+                  <!-- 動態載入維護歷史 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
         <!-- 維護警告區域 -->
         <div class="card mt-4" id="alertsCard" style="display: none;">
           <div class="card-header bg-warning">
@@ -351,7 +381,7 @@
     </div>
   </div>
 
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     $(document).ready(function () {
@@ -364,6 +394,9 @@
       
       // 載入維護分析圖表
       loadMaintenanceAnalytics();
+      
+      // 載入維護歷史記錄
+      loadMaintenanceHistory();
     });
 
     function loadMaintenanceAlerts() {
@@ -646,6 +679,125 @@
         console.error('保存設定失敗:', err);
         alert('保存設定時發生錯誤');
       });
+    }
+
+    function loadMaintenanceHistory() {
+      fetch('/maintenance/api/history')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const history = data.history;
+            let historyHtml = '';
+            let totalCost = 0;
+            
+            history.forEach(record => {
+              const cost = parseFloat(record.cost) || 0;
+              totalCost += cost;
+              
+              historyHtml += `
+                <tr>
+                  <td><strong>${record.license_plate}</strong></td>
+                  <td>${record.maintenance_type}</td>
+                  <td>${record.maintenance_date}</td>
+                  <td>${record.mileage_at_maintenance.toLocaleString()} km</td>
+                  <td><span class="text-success">$${cost.toLocaleString()}</span></td>
+                  <td>${record.performed_by}</td>
+                  <td>${record.notes || '-'}</td>
+                </tr>
+              `;
+            });
+            
+            if (history.length === 0) {
+              historyHtml = '<tr><td colspan="7" class="text-center">暫無維護歷史記錄</td></tr>';
+            }
+            
+            document.getElementById('maintenanceHistoryBody').innerHTML = historyHtml;
+            document.getElementById('totalMaintenanceCost').textContent = `總費用: $${totalCost.toLocaleString()}`;
+          }
+        })
+        .catch(error => {
+          console.error('載入維護歷史失敗:', error);
+          document.getElementById('maintenanceHistoryBody').innerHTML = 
+            '<tr><td colspan="7" class="text-center text-danger">載入維護歷史失敗</td></tr>';
+        });
+    }
+
+    function viewHistory(licensePlate) {
+      // 顯示特定車輛的維護歷史
+      fetch(`/maintenance/api/history/${licensePlate}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const history = data.history;
+            let historyDetails = '';
+            let vehicleTotalCost = 0;
+            
+            if (history.length > 0) {
+              history.forEach(record => {
+                const cost = parseFloat(record.cost) || 0;
+                vehicleTotalCost += cost;
+                
+                historyDetails += `
+                  <div class="maintenance-record mb-2 p-2 border rounded">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <strong>${record.maintenance_type}</strong><br>
+                        <small class="text-muted">日期: ${record.maintenance_date}</small>
+                      </div>
+                      <div class="col-md-3">
+                        <span class="text-success">費用: $${cost.toLocaleString()}</span><br>
+                        <small class="text-muted">里程: ${record.mileage_at_maintenance.toLocaleString()} km</small>
+                      </div>
+                      <div class="col-md-3">
+                        <small class="text-muted">執行: ${record.performed_by}</small><br>
+                        <small>${record.notes || '無備註'}</small>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              });
+              
+              historyDetails += `
+                <div class="mt-3 p-2 bg-light rounded">
+                  <strong>車輛 ${licensePlate} 維護總費用: $${vehicleTotalCost.toLocaleString()}</strong>
+                </div>
+              `;
+            } else {
+              historyDetails = '<p class="text-center text-muted">此車輛暫無維護記錄</p>';
+            }
+            
+            // 創建並顯示模態框
+            const modal = `
+              <div class="modal fade" id="vehicleHistoryModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-lg" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">車輛 ${licensePlate} 維護歷史</h5>
+                      <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      ${historyDetails}
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+            
+            // 移除舊的模態框並添加新的
+            $('#vehicleHistoryModal').remove();
+            $('body').append(modal);
+            $('#vehicleHistoryModal').modal('show');
+          }
+        })
+        .catch(error => {
+          console.error('載入車輛維護歷史失敗:', error);
+          alert('載入車輛維護歷史失敗');
+        });
     }
   </script>
 </body>

@@ -253,7 +253,7 @@
     </div>
   </div>
 
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     $(document).ready(function () {
@@ -317,6 +317,22 @@
       });
     }
 
+
+    function updateAlertsDisplay(alerts) {
+      const alertsContainer = document.getElementById('alertsContainer');
+      if (alertsContainer && alerts.length > 0) {
+        let alertsHtml = '';
+        alerts.slice(0, 3).forEach(alert => {
+          const severityClass = alert.severity === 'high' ? 'danger' : 'warning';
+          alertsHtml += `
+            <div class="alert alert-${severityClass} alert-sm mb-2">
+              <strong>${alert.type}:</strong> ${alert.message}
+            </div>
+          `;
+        });
+        alertsContainer.innerHTML = alertsHtml;
+      }
+    }
 
     function loadRentalTrend() {
       // 獲取最近7天的日期

@@ -82,7 +82,7 @@ car_platform/
 
 ### 1. 複製專案
 ```bash
-git clone [<repository-url>](https://github.com/pomeyooooo/car_platform.git)
+git clone <repository-url>
 cd car_platform
 ```
 
@@ -242,13 +242,6 @@ npm start
   "maintenance_logs": [] // 維護記錄
 }
 ```
-
-### 檔案上傳
-
-系統支援照片上傳功能：
-- 上傳目錄：`back_end/uploads/`
-- 支援格式：常見圖片格式 (JPG, PNG 等)
-- 大小限制：5MB
 
 ## 🛠️ 故障排除
 

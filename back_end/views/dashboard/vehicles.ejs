@@ -356,6 +356,16 @@
 
       // 載入車輛數據和圖表
       loadVehicleData();
+      
+      // 定期刷新車輛列表 (每30秒)
+      setInterval(refreshVehicleList, 30000);
+      
+      // 頁面可見時自動刷新
+      document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+          refreshVehicleList();
+        }
+      });
     });
 
     function loadVehicleData() {
@@ -484,6 +494,60 @@
       });
     }
 
+    function refreshVehicleList() {
+      // 刷新車輛列表和統計資料
+      fetch('/vehicles/api/vehicles')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            updateVehicleTable(data.vehicles);
+            // 同時更新統計數據
+            loadVehicleData();
+          }
+        })
+        .catch(error => console.error('刷新車輛列表失敗:', error));
+    }
+
+    function updateVehicleTable(vehicles) {
+      const tbody = document.querySelector('.table tbody');
+      
+      if (vehicles && vehicles.length > 0) {
+        tbody.innerHTML = vehicles.map(vehicle => `
+          <tr>
+            <td>${vehicle.license_plate}</td>
+            <td>${vehicle.mileage} km</td>
+            <td>
+              ${vehicle.low_oil_volume ? 
+                '<span class="badge badge-danger">油量低</span>' : 
+                '<span class="badge badge-success">正常</span>'}
+            </td>
+            <td>
+              ${vehicle.warning_light ? 
+                '<span class="badge badge-danger">亮起</span>' : 
+                '<span class="badge badge-success">正常</span>'}
+            </td>
+            <td>
+              ${vehicle.status === 'available' ? 
+                '<span class="badge badge-success">可用</span>' : 
+                vehicle.status === 'rented' ? 
+                '<span class="badge badge-warning">借出</span>' : 
+                '<span class="badge badge-danger">故障</span>'}
+            </td>
+            <td>${vehicle.last_maintenance_date || '未記錄'}</td>
+            <td>
+              <div class="btn-group">
+                <button class="btn btn-sm btn-info" onclick="viewVehicleDetails(${vehicle.id})">詳情</button>
+                <button class="btn btn-sm btn-warning" onclick="editVehicle(${vehicle.id})">編輯</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteVehicle(${vehicle.id})">刪除</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">暫無車輛記錄</td></tr>';
+      }
+    }
+
     // 新增車輛表單提交處理
     document.getElementById('addVehicleForm').addEventListener('submit', function(e) {
       e.preventDefault();
@@ -501,7 +565,8 @@
         },
         success: function(response) {
           $('#addVehicleModal').modal('hide');
-          location.reload();
+          refreshVehicleList();
+          document.getElementById('addVehicleForm').reset();
         },
         error: function() {
           alert('新增車輛失敗，請稍後再試');
@@ -609,11 +674,16 @@
     // 刪除車輛功能
     function deleteVehicle(vehicleId) {
       if (confirm('確定要刪除這輛車嗎？此操作無法撤銷。')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/vehicles/delete/${vehicleId}`;
-        document.body.appendChild(form);
-        form.submit();
+        $.ajax({
+          url: `/vehicles/delete/${vehicleId}`,
+          method: 'POST',
+          success: function() {
+            refreshVehicleList();
+          },
+          error: function() {
+            alert('刪除車輛失敗，請稍後再試');
+          }
+        });
       }
     }
 
@@ -636,7 +706,7 @@
         },
         success: function() {
           $('#editVehicleModal').modal('hide');
-          location.reload();
+          refreshVehicleList();
         },
         error: function() {
           alert('更新車輛失敗，請稍後再試');

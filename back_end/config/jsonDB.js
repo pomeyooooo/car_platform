@@ -91,12 +91,19 @@ async function addVehicle(vehicle) {
 
 async function updateVehicle(vehicleId, updates) {
   const db = await readDb();
-  const index = db.vehicles.findIndex(v => v.id === vehicleId);
+  // Support both numeric ID and license_plate as vehicle identifier
+  const index = db.vehicles.findIndex(v => 
+    v.id === vehicleId || v.license_plate === vehicleId
+  );
   
-  if (index === -1) return null;
+  if (index === -1) {
+    console.log(`Vehicle not found with ID/license_plate: ${vehicleId}`);
+    return null;
+  }
   
   db.vehicles[index] = { ...db.vehicles[index], ...updates };
   await writeDb(db);
+  console.log(`Vehicle updated: ${vehicleId}`, updates);
   return db.vehicles[index];
 }
 

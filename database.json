@@ -17,6 +17,7 @@
   ],
   "vehicles": [
     {
+      "id": 1,
       "license_plate": "ABC-1234",
       "mileage": 5000,
       "low_oil_volume": false,

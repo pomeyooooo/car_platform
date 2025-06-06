@@ -88,4 +88,15 @@ router.post('/delete/:id', async (req, res) => {
   }
 });
 
+// API 獲取所有車輛 (JSON格式)
+router.get('/api/vehicles', async (req, res) => {
+  try {
+    const vehicles = await db.getAllVehicles();
+    res.json({ success: true, vehicles });
+  } catch (err) {
+    console.error('API 獲取車輛列表錯誤:', err);
+    res.status(500).json({ success: false, message: '伺服器錯誤' });
+  }
+});
+
 module.exports = router;

@@ -261,8 +261,13 @@ router.post('/api/borrow', async (req, res) => {
     // 保存租借記錄
     await db.addRentalLog(rentalLog);
     
-    // 更新車輛狀態為借出
-    await db.updateVehicle(vehicle_id, { status: 'rented' });
+    // 更新車輛狀態為借出，同時更新里程數、油量和警示燈
+    await db.updateVehicle(vehicle_id, { 
+      status: 'rented',
+      mileage: parseInt(mileage_before_driving),
+      low_oil_volume: oil_before === 'low',
+      warning_light: has_issues || false
+    });
     
     res.json({ success: true, message: '借車成功', rental_log: rentalLog });
   } catch (err) {
@@ -313,11 +318,12 @@ router.post('/api/return', async (req, res) => {
     allLogs[logIndex] = updatedLog;
     await db.writeDb({ ...await db.readDb(), rental_logs: allLogs });
     
-    // 更新車輛狀態為可用，並更新里程數
+    // 更新車輛狀態為可用，並更新里程數、油量和警示燈
     await db.updateVehicle(vehicle_id, { 
       status: 'available',
       mileage: parseInt(mileage_after_driving),
-      low_oil_volume: oil_after === 'low'
+      low_oil_volume: oil_after === 'low',
+      warning_light: has_issues || false
     });
     
     res.json({ success: true, message: '還車成功', rental_log: updatedLog });
